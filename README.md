@@ -1,64 +1,99 @@
-public static class CustomArrayList {
 
-        private Object[] arr;
+
+    /**
+     * Represents dynamic list implementation
+     *
+     * @author Tsvyatko Konov
+     * @author Svetlin Nakov
+     */
+
+    public static class DynamicList {
+
+
+        private class Node {
+
+            Object element;
+
+            Node next;
+
+
+            Node(Object element, Node prevNode) {
+
+                this.element = element;
+
+                prevNode.next = this;
+
+            }
+
+
+            Node(Object element) {
+
+                this.element = element;
+
+                next = null;
+
+            }
+
+        }
+
+// Setting variables then giving them values
+        private Node head;
+
+        private Node tail;
 
         private int count;
 
-        private static final int INITIAL_CAPACITY = 4;
+        public DynamicList() {
 
+            this.head = null;
 
-        /**
-         * Initializes the array-based list – allocate memory
-         **/
+            this.tail = null;
 
-        public CustomArrayList() {
-
-            arr = new Object[INITIAL_CAPACITY];
-
-            count = 0;
+            this.count = 0;
 
         }
 
-
         /**
-         * @return the actual list length
-         */
-
-        public int getLength() {
-
-            return count;
-
-        }
-
-
-        /**
-         * Adds element to the list
+         * Add element at the end of the list
          *
          * @param item - the element you want to add
          */
 
         public void add(Object item) {
 
-            add(count, item);
+            if (head == null) {
+
+                // We have empty list
+
+                head = new Node(item);
+
+                tail = head;
+
+            } else {
+
+                // We have non-empty list
+
+                Node newNode = new Node(item, tail);
+
+                tail = newNode;
+
+            }
+
+            count++;
 
         }
 
-
         /**
-         * Inserts the specified element at given position in this list
+         * Removes and returns element on the specific index
          *
-         * @param index -
-         *              <p>
-         *              index at which the specified element is to be inserted
-         * @param item  -
-         *              <p>
-         *              element to be inserted
-         * @throws IndexOutOfBoundsException
+         * @param index - the index of the element you want to remove
+         * @return the removed element
+         * @throws IndexOutOfBoundsException - when index is invalid
          */
 
-        public void add(int index, Object item) {
+        public Object remove(int index) {
 
-            if (index > count || index < 0) {
+            if (index >= count || index < 0) {
 
                 throw new IndexOutOfBoundsException(
 
@@ -66,61 +101,150 @@ public static class CustomArrayList {
 
             }
 
-            Object[] extendedArr = arr;
 
-            if (count + 1 == arr.length) {
+            // Find the element at the specified index
 
-                extendedArr = new Object[arr.length * 2];
+            int currentIndex = 0;
+
+            Node currentNode = head;
+
+            Node prevNode = null;
+
+            while (currentIndex < index) {
+
+                prevNode = currentNode;
+
+                currentNode = currentNode.next;
+
+                currentIndex++;
 
             }
 
 
-            System.arraycopy(arr, 0, extendedArr, 0, index);
+            // Remove the element
 
-            count++;
+            count--;
 
-            System.arraycopy(
+            if (count == 0) {
 
-                    arr, index, extendedArr, index + 1, count - index - 1);
+                head = null;
 
-            extendedArr[index] = item;
+                tail = null;
 
-            arr = extendedArr;
+            } else if (prevNode == null) {
+
+                head = currentNode.next;
+
+            } else {
+
+                prevNode.next = currentNode.next;
+
+            }
+
+            return currentNode.element;
 
         }
+
         /**
-
-         * Returns the index of the first occurrence of the specified
-
-         * element in this list.
-
+         * Removes the specified item and return its index
          *
+         * @param item – the item for removal
+         * @return the index of the element or -1 if does not exist
+         */
 
-         * @param item - the element you are searching
+        public int remove(Object item) {
 
-         * @return the index of given element or -1 is not found
+            // Find the element containing searched item
 
+            int currentIndex = 0;
+
+            Node currentNode = head;
+
+            Node prevNode = null;
+
+            while (currentNode != null) {
+
+                if ((currentNode.element != null &&
+
+                        currentNode.element.equals(item)) ||
+
+                        (currentNode.element == null) && (item == null)) {
+
+                    break;
+
+                }
+
+                prevNode = currentNode;
+
+                currentNode = currentNode.next;
+
+                currentIndex++;
+
+            }
+
+
+            if (currentNode != null) {
+
+                // Element is found in the list. Remove it
+
+                count--;
+
+                if (count == 0) {
+
+                    head = null;
+
+                    tail = null;
+
+                } else if (prevNode == null) {
+
+                    head = currentNode.next;
+
+                } else {
+
+                    prevNode.next = currentNode.next;
+
+                }
+
+                return currentIndex;
+
+            } else {
+
+                // Element is not found in the list
+
+                return -1;
+
+            }
+
+        }
+
+        /**
+         * Searches for given element in the list
+         *
+         * @param item - the item you are searching for
+         * @return the index of the first occurrence of
+         * <p>
+         * the element in the list or -1 when not found
          */
 
         public int indexOf(Object item) {
 
-            if (item == null) {
+            int index = 0;
 
-                for (int i = 0; i < arr.length; i++) {
+            Node current = head;
 
-                    if (arr[i] == null)
+            while (current != null) {
 
-                        return i;
+                if ((current.element != null && current.element.equals(item))
+
+                        || (current.element == null) && (item == null)) {
+
+                    return index;
 
                 }
 
-            } else {
+                current = current.next;
 
-                for (int i = 0; i < arr.length; i++)
-
-                    if (item.equals(arr[i]))
-
-                        return i;
+                index++;
 
             }
 
@@ -129,31 +253,11 @@ public static class CustomArrayList {
         }
 
 
-
         /**
-
-         * Clears the list
-
-         */
-
-        public void clear() {
-
-            arr = new Object[0];
-
-            count = 0;
-
-        }
-
-
-
-        /**
-
-         * Checks if an element exists
-
-         * @param item – the item to be checked
-
-         * @return if the item exists
-
+         * Check if the specified element exist in the list
+         *
+         * @param item - the item you are searching for
+         * @return true if the element exist or false otherwise
          */
 
         public boolean contains(Object item) {
@@ -166,17 +270,15 @@ public static class CustomArrayList {
 
         }
 
-
-
         /**
-
-         * @return the object on given position
-
+         * @param index – the position of the element [0 … count-1]
+         * @return the object at the specified index
+         * @throws IndexOutOfBoundsException - when index is invalid
          */
 
         public Object elementAt(int index) {
 
-            if (index>=count || index<0) {
+            if (index >= count || index < 0) {
 
                 throw new IndexOutOfBoundsException(
 
@@ -184,101 +286,56 @@ public static class CustomArrayList {
 
             }
 
-            return arr[index];
+            Node currentNode = this.head;
+
+            for (int i = 0; i < index; i++) {
+
+                currentNode = currentNode.next;
+
+            }
+
+            return currentNode.element;
 
         }
+
+
         /**
-
-         * Removes the element at the specified index
-
-         * @param index - the index, whose element you want to remove
-
-         * @return the removed element
-
+         * @return the actual list length
          */
 
-        public Object remove(int index) {
+        public int getLength() {
 
-            if (index>=count || index<0) {
-
-                throw new IndexOutOfBoundsException(
-
-                        "Invalid index: " + index);
-
-            }
-
-            Object item = arr[index];
-
-            System.arraycopy(arr, index+1, arr, index, count-index+1);
-
-            arr[count - 1] = null;
-
-            count--;
-
-            return item;
-
+            return count;
         }
-  /**
-
-         * Removes the specified item and returns its index or -1
-
-         * if item does not exists
-
-         * @param item - the item you want to remove
-
-         */
-
-        public int remove(Object item) {
-
-            int index = indexOf(item);
-
-            if (index == -1) {
-
-                return index;
-
-            }
-
-            System.arraycopy(arr, index+1, arr, index, count-index+1);
-
-            count--;
-
-            return index;
-
-        }
-
     }
-    public static void main(String[] args){
+        public static void main(String[] args) {
 Scanner scr = new Scanner(System.in);
-        CustomArrayList shoppingList = new CustomArrayList();
+            DynamicList shoppingList = new DynamicList();
 
-        shoppingList.add("Milk");
+            shoppingList.add("Milk");
 
-        shoppingList.add("Honey");
+            shoppingList.add("Honey");
 
-        shoppingList.add("Olives");
+            shoppingList.add("Olives");
 
-        shoppingList.add("Beer");
+            shoppingList.add("Beer");
 
-        shoppingList.remove("Olives");
+            shoppingList.remove("Olives");
+            System.out.println("What do we have to add?");
+            String a = scr.nextLine();
 
-        System.out.println("Do we have to buy:");
-        String a =scr.nextLine();
-        if(shoppingList.contains(a)){
-            System.out.println("No,we have it.");
-        }else{
-            System.out.println("We have to add it!");
-            shoppingList.add(a);
+while(!shoppingList.contains(a)){
+shoppingList.add(a);
+    System.out.println("Added "+ a);
+ }
+
+            System.out.println("We need to buy:");
+
+            for (int i = 0; i < shoppingList.getLength(); i++) {
+
+                System.out.println(shoppingList.elementAt(i));
+
+            }
+
         }
-        System.out.println("Shopping list:");
-        for (int i = 0; i <shoppingList.getLength() ; i++) {
-            System.out.println(shoppingList.elementAt(i));
-        }
-
-        }
-    }
-
-
-
-
-
 
